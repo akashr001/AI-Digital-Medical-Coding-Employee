@@ -1,0 +1,15 @@
+langgraph
+langchain
+langchain-core
+langchain-community
+fastapi
+uvicorn
+litellm
+python-dotenv
+pydantic
+qdrant-client
+sentence-transformers
+langsmith
+redis
+deepeval
+ragas
