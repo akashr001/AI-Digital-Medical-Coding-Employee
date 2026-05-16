@@ -216,17 +216,41 @@ The manifests include deployments and services for:
 
 ## Project Status
 
-This repository provides the foundation for an agentic medical coding assistant. The current implementation includes the API, graph workflow, agent structure, LLM integration, vector search integration, and deployment scaffolding.
+The project is evolving from a proof-of-concept agentic AI workflow into an enterprise-style AI systems engineering platform for medical coding assistance.
 
-Before production use, extend the project with:
+Current implementation includes:
 
-- Complete Qdrant collection creation and ingestion pipeline
-- Stronger medical coding knowledge base coverage
-- Authentication and authorization
-- Persistent audit logging
-- PHI/PII handling policies
-- Automated tests for API and agent workflows
-- Production-grade observability and monitoring
+- Multi-agent orchestration using LangGraph
+- Medical RAG pipeline with Qdrant
+- LiteLLM + Ollama model integration
+- Validation, compliance, and audit workflows
+- Docker and Kubernetes deployment setup
+- LangSmith tracing and evaluation integration
+
+Recent Infrastructure Upgrades:
+
+- NGINX API Gateway integration
+- JWT-based authentication system
+- Role-Based Access Control (RBAC)
+- API rate limiting and request protection
+- Enterprise-style backend restructuring
+- Structured logging and observability foundations
+
+Planned Enterprise Features:
+
+- Microservice architecture
+- Async task queues and distributed workers
+- Event-driven workflows
+- OpenTelemetry + Prometheus monitoring
+- Envoy/Istio service mesh integration
+- Human-in-the-loop medical review workflows
+- Advanced RAG optimization and reranking
+- CI/CD pipelines and automated testing
+- Production-grade healthcare security patterns
+
+This repository is intended for AI systems engineering, platform engineering, and distributed AI workflow demonstration purposes.
+
+
 
 ## Disclaimer
 
