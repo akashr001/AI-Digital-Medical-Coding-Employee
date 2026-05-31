@@ -1,0 +1,552 @@
+```html
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Medical Coding Agent Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px -3px rgba(99, 102, 241, 0.4); }
+            50% { box-shadow: 0 0 25px 2px rgba(99, 102, 241, 0.8); }
+        }
+        .processing-glow { animation: pulse-glow 2s infinite; }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans selection:bg-indigo-500/30">
+
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center space-x-3">
+            <div class="bg-indigo-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/20">
+                <i data-lucide="cpu" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">MedCode AI</h1>
+                <p class="text-xs text-slate-400">Multi-Agent Autonomous Workflow</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span id="global-status" class="flex items-center space-x-2 text-xs font-medium px-3 py-1.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                <span class="w-2 h-2 rounded-full bg-slate-500 inline-block"></span>
+                <span>System Idle</span>
+            </span>
+        </div>
+    </header>
+
+    <main class="flex-1 flex overflow-hidden max-w-[1600px] w-full mx-auto p-6 gap-6">
+        
+        <div class="w-1/3 flex flex-col gap-6 min-w-[380px]">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <i data-lucide="file-up" class="w-4 h-4 text-indigo-400"></i> Document Ingestion
+                </h2>
+                <form id="upload-form" class="space-y-4">
+                    <div id="drop-zone" class="border-2 border-dashed border-slate-700 hover:border-indigo-500/50 transition-colors rounded-xl p-6 text-center cursor-pointer bg-slate-950/40 relative group">
+                        <input type="file" id="file-input" class="hidden" accept=".pdf,.png,.jpg,.jpeg,.txt" required />
+                        <div class="space-y-2">
+                            <div class="mx-auto w-12 h-12 bg-slate-800/80 rounded-lg flex items-center justify-center text-slate-400 group-hover:text-indigo-400 transition-colors">
+                                <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+                            </div>
+                            <p id="file-name" class="text-sm font-medium text-slate-300 truncate px-4">Drag & drop clinical record or click to browse</p>
+                            <p class="text-xs text-slate-500">Supports PDF, Images, Text documents</p>
+                        </div>
+                    </div>
+                    <button type="submit" id="submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 disabled:opacity-50 disabled:pointer-events-none text-white font-medium py-3 px-4 rounded-xl shadow-lg shadow-indigo-600/20 transition-all flex items-center justify-center gap-2">
+                        <span>Execute Agent Pipeline</span>
+                        <i data-lucide="play" class="w-4 h-4"></i>
+                    </button>
+                </form>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex-1 flex flex-col overflow-hidden">
+                <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-6 flex items-center gap-2">
+                    <i data-lucide="git-commit" class="w-4 h-4 text-indigo-400"></i> Node Topology Execution
+                </h2>
+                
+                <div class="relative flex-1 overflow-y-auto space-y-6 pl-4 border-l border-slate-800">
+                    <div id="agent-ocr" class="relative agent-node opacity-40 transition-all duration-300">
+                        <span class="absolute -left-[25px] top-0 bg-slate-800 border-2 border-slate-700 text-slate-400 w-4 h-4 rounded-full flex items-center justify-center node-dot"></span>
+                        <div class="flex items-start gap-3">
+                            <div class="p-2 bg-slate-800 rounded-lg text-slate-400 node-icon"><i data-lucide="scan-text" class="w-4 h-4"></i></div>
+                            <div>
+                                <h3 class="text-sm font-semibold text-slate-200">OCR Agent</h3>
+                                <p class="text-xs text-slate-500 node-status">Awaiting document...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="agent-extraction" class="relative agent-node opacity-40 transition-all duration-300">
+                        <span class="absolute -left-[25px] top-0 bg-slate-800 border-2 border-slate-700 text-slate-400 w-4 h-4 rounded-full flex items-center justify-center node-dot"></span>
+                        <div class="flex items-start gap-3">
+                            <div class="p-2 bg-slate-800 rounded-lg text-slate-400 node-icon"><i data-lucide="clipboard-type" class="w-4 h-4"></i></div>
+                            <div>
+                                <h3 class="text-sm font-semibold text-slate-200">Extraction Agent</h3>
+                                <p class="text-xs text-slate-500 node-status">Awaiting preceding states...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="agent-retrieval" class="relative agent-node opacity-40 transition-all duration-300">
+                        <span class="absolute -left-[25px] top-0 bg-slate-800 border-2 border-slate-700 text-slate-400 w-4 h-4 rounded-full flex items-center justify-center node-dot"></span>
+                        <div class="flex items-start gap-3">
+                            <div class="p-2 bg-slate-800 rounded-lg text-slate-400 node-icon"><i data-lucide="database" class="w-4 h-4"></i></div>
+                            <div>
+                                <h3 class="text-sm font-semibold text-slate-200">Retrieval Agent</h3>
+                                <p class="text-xs text-slate-500 node-status">Awaiting preceding states...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="agent-coding" class="relative agent-node opacity-40 transition-all duration-300">
+                        <span class="absolute -left-[25px] top-0 bg-slate-800 border-2 border-slate-700 text-slate-400 w-4 h-4 rounded-full flex items-center justify-center node-dot"></span>
+                        <div class="flex items-start gap-3">
+                            <div class="p-2 bg-slate-800 rounded-lg text-slate-400 node-icon"><i data-lucide="binary" class="w-4 h-4"></i></div>
+                            <div>
+                                <h3 class="text-sm font-semibold text-slate-200">Coding Agent</h3>
+                                <p class="text-xs text-slate-500 node-status">Awaiting preceding states...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="agent-audit" class="relative agent-node opacity-40 transition-all duration-300">
+                        <span class="absolute -left-[25px] top-0 bg-slate-800 border-2 border-slate-700 text-slate-400 w-4 h-4 rounded-full flex items-center justify-center node-dot"></span>
+                        <div class="flex items-start gap-3">
+                            <div class="p-2 bg-slate-800 rounded-lg text-slate-400 node-icon"><i data-lucide="shield-alert" class="w-4 h-4"></i></div>
+                            <div>
+                                <h3 class="text-sm font-semibold text-slate-200">Audit Agent</h3>
+                                <p class="text-xs text-slate-500 node-status">Awaiting preceding states...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="agent-qa" class="relative agent-node opacity-40 transition-all duration-300">
+                        <span class="absolute -left-[25px] top-0 bg-slate-800 border-2 border-slate-700 text-slate-400 w-4 h-4 rounded-full flex items-center justify-center node-dot"></span>
+                        <div class="flex items-start gap-3">
+                            <div class="p-2 bg-slate-800 rounded-lg text-slate-400 node-icon"><i data-lucide="check-square" class="w-4 h-4"></i></div>
+                            <div>
+                                <h3 class="text-sm font-semibold text-slate-200">QA Agent</h3>
+                                <p class="text-xs text-slate-500 node-status">Awaiting preceding states...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="agent-supervisor" class="relative agent-node opacity-40 transition-all duration-300">
+                        <span class="absolute -left-[25px] top-0 bg-slate-800 border-2 border-slate-700 text-slate-400 w-4 h-4 rounded-full flex items-center justify-center node-dot"></span>
+                        <div class="flex items-start gap-3">
+                            <div class="p-2 bg-slate-800 rounded-lg text-slate-400 node-icon"><i data-lucide="award" class="w-4 h-4"></i></div>
+                            <div>
+                                <h3 class="text-sm font-semibold text-slate-200">Supervisor Agent</h3>
+                                <p class="text-xs text-slate-500 node-status">Awaiting final validation...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 flex flex-col bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+            <div class="border-b border-slate-800 bg-slate-950/60 px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <span class="flex h-2 w-2 relative">
+                        <span id="output-pulse" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 hidden"></span>
+                        <span id="output-dot" class="relative inline-flex rounded-full h-2 w-2 bg-slate-600"></span>
+                    </span>
+                    <h2 class="text-sm font-semibold tracking-wider uppercase text-slate-300">Live Agent Stream Output</h2>
+                </div>
+                <div class="text-xs text-indigo-400 font-mono bg-indigo-950/50 px-2.5 py-1 rounded border border-indigo-900/40">
+                    text/event-stream
+                </div>
+            </div>
+
+            <div id="terminal" class="flex-1 overflow-y-auto p-6 font-mono text-sm space-y-6 bg-slate-950/20">
+                <div id="empty-state" class="h-full flex flex-col items-center justify-center text-slate-500 space-y-3 font-sans">
+                    <i data-lucide="terminal" class="w-12 h-12 text-slate-700"></i>
+                    <p class="text-base text-slate-400">No stream telemetry recorded yet.</p>
+                    <p class="text-xs text-slate-600 max-w-sm text-center">Submit a clinical document to stream continuous live updates directly from your LangGraph pipeline nodes.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_URL = "http://localhost:8000/code/stream";
+
+        const dropZone = document.getElementById("drop-zone");
+        const fileInput = document.getElementById("file-input");
+        const fileName = document.getElementById("file-name");
+        const uploadForm = document.getElementById("upload-form");
+        const submitBtn = document.getElementById("submit-btn");
+        const globalStatus = document.getElementById("global-status");
+        const terminal = document.getElementById("terminal");
+        const emptyState = document.getElementById("empty-state");
+        const outputPulse = document.getElementById("output-pulse");
+        const outputDot = document.getElementById("output-dot");
+
+        let activeNodeId = null;
+
+        // Interaction Handling
+        dropZone.addEventListener("click", () => fileInput.click());
+        dropZone.addEventListener("dragover", (e) => { e.preventDefault(); dropZone.classList.add("border-indigo-500", "bg-indigo-950/10"); });
+        dropZone.addEventListener("dragleave", () => { dropZone.classList.remove("border-indigo-500", "bg-indigo-950/10"); });
+        dropZone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            dropZone.classList.remove("border-indigo-500", "bg-indigo-950/10");
+            if(e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                updateFileNameDisplay(e.dataTransfer.files[0].name);
+            }
+        });
+        fileInput.addEventListener("change", () => {
+            if(fileInput.files.length) updateFileNameDisplay(fileInput.files[0].name);
+        });
+
+        function updateFileNameDisplay(name) {
+            fileName.textContent = name;
+            fileName.classList.remove("text-slate-500");
+            fileName.classList.add("text-emerald-400");
+        }
+
+        // Form Event Loop
+        uploadForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if(!fileInput.files.length) return alert("Select a text or data asset.");
+
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+
+            setUIPipelineState(true);
+            emptyState.classList.add("hidden");
+            
+            // Wipe clean logs from prior execution loops
+            terminal.querySelectorAll('.log-block').forEach(el => el.remove());
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    body: formData
+                });
+
+                if(!response.ok) throw new Error(`HTTP Error Status Connection Aborted: ${response.status}`);
+
+                // Connect modern body stream reader interface
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let chunkBuffer = "";
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+
+                    // Parse streams byte values to characters
+                    chunkBuffer += decoder.decode(value, { stream: true });
+
+                    // SSE blocks are cleanly isolated by double Carriage Breaks
+                    const partialLines = chunkBuffer.split("\n\n");
+                    chunkBuffer = partialLines.pop(); // Keep uncompleted block fraction safe
+
+                    for (const rawLine of partialLines) {
+                        const sanitized = rawLine.trim();
+                        if (sanitized.startsWith("data: ")) {
+                            const rawJson = sanitized.replace("data: ", "").trim();
+                            if(!rawJson) continue;
+
+                            try {
+                                const parsedStreamObj =
+                                    JSON.parse(
+                                        rawJson
+                                    );
+
+                                console.log(
+                                    "RAW STREAM:",
+                                    parsedStreamObj
+                                );
+
+                                processLiveAgentEvent(
+                                    parsedStreamObj
+                                );
+                            } catch (jsonErr) {
+                                console.error("Malformed frame fragment:", jsonErr);
+                            }
+                        }
+                    }
+                }
+
+                updateGlobalStatus("Pipeline Complete", "bg-emerald-500");
+                if (activeNodeId) updateAgentNodeStatus(activeNodeId, "success", "State payload synced.");
+                outputDot.className = "relative inline-flex rounded-full h-2 w-2 bg-slate-600";
+
+            } catch (err) {
+                console.error(err);
+                appendTerminalLog("SYSTEM PIPELINE CRITICAL FAULT", err.message, "error");
+                updateGlobalStatus("Fault Terminated", "bg-rose-500");
+            } finally {
+                setUIPipelineState(false);
+            }
+        });
+
+        // Event Router for Node payloads
+       function processLiveAgentEvent(
+    eventObj
+) {
+
+    console.log(
+        "EVENT:",
+        eventObj
+    );
+
+    const nodeName =
+        eventObj.node;
+
+    const stateData =
+        eventObj.data;
+
+    if (
+        nodeName === "error"
+    ) {
+
+        appendTerminalLog(
+            "AGENT EXECUTION ERROR",
+            stateData.message,
+            "error"
+        );
+
+        if (
+            activeNodeId
+        ) {
+
+            updateAgentNodeStatus(
+                activeNodeId,
+                "error",
+                "Node processing crashed."
+            );
+        }
+
+        return;
+    }
+
+    if (
+        activeNodeId &&
+        activeNodeId !== nodeName
+    ) {
+
+        updateAgentNodeStatus(
+            activeNodeId,
+            "success",
+            "State data verified."
+        );
+    }
+
+    activeNodeId =
+        nodeName;
+
+    updateAgentNodeStatus(
+        nodeName,
+        "processing",
+        "Computing logic bounds..."
+    );
+
+    let displayOutput =
+        "";
+
+    let logType =
+        "info";
+
+    if (
+        nodeName === "ocr"
+    ) {
+
+        displayOutput =
+            stateData.ocr_text ||
+            "No OCR Output";
+    }
+
+    else if (
+        nodeName === "extraction"
+    ) {
+
+        displayOutput =
+            stateData.patient_note ||
+            "No Extraction Output";
+    }
+
+    else if (
+        nodeName === "retrieval"
+    ) {
+
+        if (
+            Array.isArray(
+                stateData.retrieved_context
+            )
+        ) {
+
+            displayOutput =
+                stateData
+                .retrieved_context
+                .map(
+                    item =>
+
+`ICD Code:
+${item.code}
+
+Description:
+${item.description}`
+                )
+                .join(
+                    "\n\n---------------------------------\n\n"
+                );
+
+        } else {
+
+            displayOutput =
+                JSON.stringify(
+                    stateData.retrieved_context,
+                    null,
+                    2
+                );
+        }
+
+        logType =
+            "warn";
+    }
+
+    else if (
+        nodeName === "coding"
+    ) {
+
+        displayOutput =
+            stateData.coding_result ||
+            "No Coding Output";
+    }
+
+    else if (
+        nodeName === "audit"
+    ) {
+
+        displayOutput =
+            stateData.audit_result ||
+            "No Audit Output";
+    }
+
+    else if (
+        nodeName === "qa"
+    ) {
+
+        displayOutput =
+            stateData.qa_result ||
+            "No QA Output";
+    }
+
+    else if (
+        nodeName === "supervisor"
+    ) {
+
+        displayOutput =
+            stateData.final_report ||
+            "No Supervisor Output";
+
+        logType =
+            "success";
+    }
+
+    appendTerminalLog(
+        `${nodeName.toUpperCase()} AGENT DATA STREAM`,
+        displayOutput,
+        logType
+    );
+}
+        // Graphical Interface Element Controller Mutations
+        function setUIPipelineState(isLoading) {
+            if(isLoading) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span> Await Nodes...`;
+                updateGlobalStatus("Stream Active", "bg-indigo-500");
+                outputPulse.classList.remove("hidden");
+                outputDot.className = "relative inline-flex rounded-full h-2 w-2 bg-indigo-400";
+                activeNodeId = null;
+                resetTopologyMap();
+            } else {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<span>Execute Agent Pipeline</span> <i data-lucide="play" class="w-4 h-4"></i>`;
+                lucide.createIcons();
+                outputPulse.classList.add("hidden");
+            }
+        }
+
+        function updateGlobalStatus(text, bgClass) {
+            globalStatus.innerHTML = `<span class="w-2 h-2 rounded-full ${bgClass} inline-block animate-pulse"></span> <span>${text}</span>`;
+        }
+
+        function resetTopologyMap() {
+            document.querySelectorAll(".agent-node").forEach(node => {
+                node.className = "relative agent-node opacity-40 transition-all duration-300";
+                node.querySelector(".node-dot").className = "absolute -left-[25px] top-0 bg-slate-800 border-2 border-slate-700 text-slate-400 w-4 h-4 rounded-full flex items-center justify-center node-dot";
+                node.querySelector(".node-icon").className = "p-2 bg-slate-800 rounded-lg text-slate-400 node-icon";
+                node.querySelector(".node-status").textContent = "Waiting for node sequence...";
+            });
+        }
+
+        function updateAgentNodeStatus(agentId, state, statusString) {
+            const node = document.getElementById(`agent-${agentId}`);
+            if(!node) return;
+
+            const dot = node.querySelector(".node-dot");
+            const icon = node.querySelector(".node-icon");
+            const txt = node.querySelector(".node-status");
+
+            if(state === "processing") {
+                node.className = "relative agent-node opacity-100 transition-all duration-300";
+                icon.className = "p-2 bg-indigo-950 border border-indigo-700/50 rounded-lg text-indigo-400 node-icon processing-glow";
+                dot.className = "absolute -left-[25px] top-0 bg-indigo-600 border-2 border-slate-950 w-4 h-4 rounded-full flex items-center justify-center node-dot ring-4 ring-indigo-500/20";
+                txt.textContent = statusString || "Thinking...";
+                node.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } 
+            else if(state === "success") {
+                node.className = "relative agent-node opacity-100 transition-all duration-300";
+                icon.className = "p-2 bg-emerald-950/50 border border-emerald-800/40 rounded-lg text-emerald-400 node-icon";
+                dot.className = "absolute -left-[25px] top-0 bg-emerald-500 border-2 border-slate-950 w-4 h-4 rounded-full flex items-center justify-center node-dot";
+                txt.textContent = statusString || "Task complete.";
+            }
+            else if(state === "error") {
+                node.className = "relative agent-node opacity-100 transition-all duration-300";
+                icon.className = "p-2 bg-rose-950/50 border border-rose-800/40 rounded-lg text-rose-400 node-icon";
+                dot.className = "absolute -left-[25px] top-0 bg-rose-500 border-2 border-slate-950 w-4 h-4 rounded-full flex items-center justify-center node-dot";
+                txt.textContent = statusString || "Fault detected.";
+            }
+        }
+
+        function appendTerminalLog(title, rawBody, type = "info") {
+            const logBlock = document.createElement("div");
+            logBlock.className = "log-block bg-slate-900/60 border border-slate-800/80 rounded-xl p-5 shadow-inner transition-all duration-500 opacity-0 transform translate-y-2";
+            
+            let boundaryTheme = "border-l-4 border-l-indigo-500";
+            if (type === "success") boundaryTheme = "border-l-4 border-l-emerald-500";
+            if (type === "error") boundaryTheme = "border-l-4 border-l-rose-500";
+            if (type === "warn") boundaryTheme = "border-l-4 border-l-amber-500";
+            
+            logBlock.className += ` ${boundaryTheme}`;
+            const displayBody = rawBody ? rawBody.replace(/\n/g, "<br/>") : `<span class="text-slate-600 italic">Evaluating runtime task logic...</span>`;
+
+            logBlock.innerHTML = `
+                <div class="flex justify-between items-center border-b border-slate-800/60 pb-2 mb-3">
+                    <span class="font-bold uppercase tracking-wider text-xs text-slate-300 flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full ${type === 'success' ? 'bg-emerald-400' : 'bg-indigo-400'}"></span>
+                        ${title}
+                    </span>
+                    <span class="text-[10px] text-slate-500">${new Date().toLocaleTimeString()}</span>
+                </div>
+                <div class="text-slate-300 font-sans leading-relaxed text-sm overflow-x-auto whitespace-pre-wrap">${displayBody}</div>
+            `;
+
+            terminal.appendChild(logBlock);
+            setTimeout(() => logBlock.classList.remove("opacity-0", "translate-y-2"), 20);
+            terminal.scrollTo({ top: terminal.scrollHeight, behavior: 'smooth' });
+        }
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>
+
+```

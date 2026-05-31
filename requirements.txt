@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+python-multipart
+langgraph
+langchain
+langchain-core
+langsmith
+qdrant-client
+redis
+openai
+sentence-transformers
+sarvamai
+watchdog
+ragas
+deepeval
+python-dotenv
+pydantic

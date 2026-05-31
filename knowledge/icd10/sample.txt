@@ -1,0 +1,25 @@
+E11.9|Type 2 diabetes mellitus without complications
+I10|Essential hypertension
+J45.909|Unspecified asthma uncomplicated
+N18.9|Chronic kidney disease unspecified
+A00|Cholera
+A00|Cholera
+A09|Infectious gastroenteritis and colitis
+B20|Human immunodeficiency virus disease
+E11.9|Type 2 diabetes mellitus without complications
+E10.9|Type 1 diabetes mellitus without complications
+I10|Essential hypertension
+I25.10|Atherosclerotic heart disease of native coronary artery
+J45.909|Unspecified asthma uncomplicated
+J18.9|Pneumonia unspecified organism
+K21.9|Gastro-esophageal reflux disease without esophagitis
+K35.80|Acute appendicitis
+M54.5|Low back pain
+M17.9|Osteoarthritis of knee unspecified
+N18.9|Chronic kidney disease unspecified
+N39.0|Urinary tract infection site not specified
+R07.9|Chest pain unspecified
+R51.9|Headache unspecified
+F32.9|Major depressive disorder single episode unspecified
+G43.909|Migraine unspecified not intractable
+Z00.00|Encounter for general adult medical examination without abnormal findings
